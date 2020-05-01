@@ -5,7 +5,7 @@ if(params.help) {
 
     cpu_count = Runtime.runtime.availableProcessors()
     bindings = ["atlas_config":"$params.atlas_config",
-                "atlases_directory":"$params.atlases_directory",
+                "atlas_directory":"$params.atlas_directory",
                 "atlas_centroids":"$params.atlas_centroids",
                 "multi_parameters":"$params.multi_parameters",
                 "minimal_vote_ratio":"$params.minimal_vote_ratio",
@@ -38,7 +38,8 @@ log.info "======="
 log.info ""
 log.info "[Atlas]"
 log.info "Atlas Config: $params.atlas_config"
-log.info "Atlas Directory: $params.atlases_directory"
+log.info "Atlas Anat: $params.atlas_anat"
+log.info "Atlas Directory: $params.atlas_directory"
 log.info "Atlas Centroids: $params.atlas_centroids"
 log.info ""
 log.info "[Recobundles options]"
@@ -106,7 +107,7 @@ process Transform_Centroids {
     file "${sid}__${centroid.baseName}.trk"
     script:
     """
-    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}.trk --inverse
+    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}.trk --inverse --remove_invalid
     """ 
 }
 
@@ -124,7 +125,7 @@ process Recognize_Bundles {
     script:
     """
     mkdir tmp/
-    scil_recognize_multi_bundles.py ${tractogram} $params.atlas_config $params.atlases_directory/*/ ${transfo} --inverse --output tmp/ \
+    scil_recognize_multi_bundles.py ${tractogram} $params.atlas_config $params.atlas_directory/*/ ${transfo} --inverse --output tmp/ \
         --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
         --tractogram_clustering_thr $params.wb_clustering_thr --seeds $params.seeds --processes $params.rbx_processes
     mv tmp/* ./
@@ -136,7 +137,6 @@ bundles_for_cleaning
        .set{all_bundles_for_cleaning}
 
 
-// all_bundles_for_cleaning.subscribe{println it}
 process Clean_Bundles {
     input:
     set sid, file(bundle) from all_bundles_for_cleaning

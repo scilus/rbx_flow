@@ -17,7 +17,8 @@ DESCRIPTION
                                         └── *
 
 --atlas_config = Path to json config file
---atlases_directory = Path of the folder containing all the atlas
+--atlas_anat = Path to reference anatomy of the atlas
+--atlas_directory = Path of the folder containing all atlases
 
 NOTES
 
@@ -29,8 +30,6 @@ OPTIONAL ARGUMENTS (current value)
 --wb_clustering_thr                     List of distance (mm) for QBx whole brain clustreing ($wb_clustering_thr)
 --seeds                                 List of random seeds values for the rng ($seeds)
 --outlier_alpha                         Remove spurious streamlines based on shape ($outlier_alpha)
-
-Use the Singularity in the repository folder to simplify the usage.
 
 Use '-C config_file.config' to specify a non-default configuration file.
 The '-C config_file.config' must be inserted after the nextflow call
