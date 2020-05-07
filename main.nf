@@ -63,6 +63,7 @@ root = file(params.root)
     atlas_centroids = Channel.fromPath("$params.atlas_centroids/*.trk")
     atlas_anat = Channel.fromPath("$params.atlas_anat")
     atlas_config = Channel.fromPath("$params.atlas_config")
+    atlas_directory = Channel.fromPath("$params.atlas_directory")
 
 (anat_for_registration, anat_for_reference, tractogram_for_recognition) = in_data
     .map{sid, anat, tractogram -> 
@@ -113,11 +114,13 @@ process Transform_Centroids {
 
 tractogram_for_recognition
     .combine(transformation_for_recognition, by: 0)
+    .combine(atlas_config)
+    .combine(atlas_directory)
     .set{tractogram_and_transformation}
 process Recognize_Bundles {
     cpus params.rbx_processes
     input:
-    set sid, file(tractogram), file(transfo) from tractogram_and_transformation
+    set sid, file(tractogram), file(transfo), file(config), file(directory) from tractogram_and_transformation
     output:
     set sid, "*.trk" into bundles_for_cleaning
     file "results.json"
@@ -125,7 +128,7 @@ process Recognize_Bundles {
     script:
     """
     mkdir tmp/
-    scil_recognize_multi_bundles.py ${tractogram} $params.atlas_config $params.atlas_directory/*/ ${transfo} --inverse --output tmp/ \
+    scil_recognize_multi_bundles.py ${tractogram} ${config} ${directory}/*/ ${transfo} --inverse --output tmp/ \
         --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
         --tractogram_clustering_thr $params.wb_clustering_thr --seeds $params.seeds --processes $params.rbx_processes
     mv tmp/* ./
