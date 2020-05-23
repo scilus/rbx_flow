@@ -11,7 +11,9 @@ if(params.help) {
                 "minimal_vote_ratio":"$params.minimal_vote_ratio",
                 "wb_clustering_thr":"$params.wb_clustering_thr",
                 "seeds":"$params.seeds",
-                "outlier_alpha":"$params.outlier_alpha"
+                "outlier_alpha":"$params.outlier_alpha",
+                "register_processes":"$params.register_processes",
+                "rbx_processes":"$params.rbx_processes"
                 ]
     engine = new groovy.text.SimpleTemplateEngine()
     template = engine.createTemplate(usage.text).make(bindings)
@@ -60,10 +62,16 @@ root = file(params.root)
                         maxDepth:2,
                         flat: true) {it.parent.name}
 
-    atlas_centroids = Channel.fromPath("$params.atlas_centroids/*.trk")
     atlas_anat = Channel.fromPath("$params.atlas_anat")
     atlas_config = Channel.fromPath("$params.atlas_config")
     atlas_directory = Channel.fromPath("$params.atlas_directory")
+
+    if (params.atlas_centroids) {
+        atlas_centroids = Channel.fromPath("$params.atlas_centroids/*.trk")
+    }
+    else {
+        atlas_centroids = Channel.empty()
+    }
 
 (anat_for_registration, anat_for_reference, tractogram_for_recognition) = in_data
     .map{sid, anat, tractogram -> 
@@ -98,7 +106,7 @@ process Register_Anat {
 
 
 anat_for_reference
-    .combine(transformation_for_centroids, by: 0)
+    .join(transformation_for_centroids, by: 0)
     .set{anat_and_transformation}
 process Transform_Centroids {
     input:
@@ -136,10 +144,8 @@ process Recognize_Bundles {
 }
 
 bundles_for_cleaning
-       .transpose()
-       .set{all_bundles_for_cleaning}
-
-
+    .transpose()
+    .set{all_bundles_for_cleaning}
 process Clean_Bundles {
     input:
     set sid, file(bundle) from all_bundles_for_cleaning
