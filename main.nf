@@ -2,8 +2,8 @@
 
 if(params.help) {
     usage = file("$baseDir/USAGE")
-
     cpu_count = Runtime.runtime.availableProcessors()
+
     bindings = ["atlas_config":"$params.atlas_config",
                 "atlas_directory":"$params.atlas_directory",
                 "atlas_centroids":"$params.atlas_centroids",
@@ -13,8 +13,8 @@ if(params.help) {
                 "seeds":"$params.seeds",
                 "outlier_alpha":"$params.outlier_alpha",
                 "register_processes":"$params.register_processes",
-                "rbx_processes":"$params.rbx_processes"
-                ]
+                "rbx_processes":"$params.rbx_processes"]
+
     engine = new groovy.text.SimpleTemplateEngine()
     template = engine.createTemplate(usage.text).make(bindings)
     print template.toString()
