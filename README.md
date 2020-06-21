@@ -23,7 +23,7 @@ Requirements
 
 - [Nextflow](https://www.nextflow.io)
 - [scilpy](https://github.com/scilus/scilpy)
-- [ants] (https://github.com/ANTsX/ANTs)
+- [ants](https://github.com/ANTsX/ANTs)
 
 Usage
 -----
