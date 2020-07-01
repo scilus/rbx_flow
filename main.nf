@@ -57,7 +57,7 @@ log.info "Input: $params.root"
 root = file(params.root)
 /* Watch out, files are ordered alphabetically in channel */
     in_data = Channel
-        .fromFilePairs("$root/**/{*tracking.trk,*anat.nii.gz}",
+        .fromFilePairs("$root/**/{*tracking.trk,*fa.nii.gz}",
                         size: 2,
                         maxDepth:2,
                         flat: true) {it.parent.name}
@@ -95,12 +95,11 @@ process Register_Anat {
     set sid, file(native_anat), file(atlas) from anats_for_registration
 
     output:
-    set sid, "${sid}__output0GenericAffine.txt" into transformation_for_recognition, transformation_for_centroids
+    set sid, "${sid}__output0GenericAffine.mat" into transformation_for_recognition, transformation_for_centroids
     file "${sid}__outputWarped.nii.gz"
     script:
     """
     antsRegistrationSyNQuick.sh -d 3 -f ${native_anat} -m ${atlas} -n ${params.register_processes} -o ${sid}__output -t a
-    ConvertTransformFile 3 ${sid}__output0GenericAffine.mat ${sid}__output0GenericAffine.txt --hm --ras
     """ 
 }
 
@@ -116,7 +115,7 @@ process Transform_Centroids {
     file "${sid}__${centroid.baseName}.trk"
     script:
     """
-    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}.trk --inverse --remove_invalid
+    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}.trk --inverse --cut_invalid
     """ 
 }
 
@@ -136,7 +135,7 @@ process Recognize_Bundles {
     script:
     """
     mkdir tmp/
-    scil_recognize_multi_bundles.py ${tractogram} ${config} ${directory}/*/ ${transfo} --inverse --output tmp/ \
+    scil_recognize_multi_bundles.py ${tractogram} ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
         --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
         --tractogram_clustering_thr $params.wb_clustering_thr --seeds $params.seeds --processes $params.rbx_processes
     mv tmp/* ./
