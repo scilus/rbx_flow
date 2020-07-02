@@ -67,7 +67,7 @@ root = file(params.root)
     atlas_directory = Channel.fromPath("$params.atlas_directory")
 
     if (params.atlas_centroids) {
-        atlas_centroids = Channel.fromPath("$params.atlas_centroids/*.trk")
+        atlas_centroids = Channel.fromPath("$params.atlas_centroids/*_centroid.trk")
     }
     else {
         atlas_centroids = Channel.empty()
@@ -115,7 +115,7 @@ process Transform_Centroids {
     file "${sid}__${centroid.baseName}.trk"
     script:
     """
-    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}_centroid.trk --inverse --cut_invalid
+    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}.trk --inverse --cut_invalid
     """ 
 }
 
