@@ -115,7 +115,7 @@ process Transform_Centroids {
     file "${sid}__${centroid.baseName}.trk"
     script:
     """
-    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}.trk --inverse --cut_invalid
+    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}_centroid.trk --inverse --cut_invalid
     """ 
 }
 
