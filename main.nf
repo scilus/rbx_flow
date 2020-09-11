@@ -73,7 +73,7 @@ root = file(params.root)
         atlas_centroids = Channel.empty()
     }
 
-(anat_for_registration, anat_for_reference, tractogram_for_recognition) = in_data
+(anat_for_registration, anat_for_reference, tractogram_for_invalid) = in_data
     .map{sid, anat, tractogram -> 
         [tuple(sid, anat),
         tuple(sid, anat),
@@ -119,6 +119,17 @@ process Transform_Centroids {
     """ 
 }
 
+process Remove_Invalid {
+    input:
+    set sid, file(tractogram) from tractogram_for_invalid
+    output:
+    file "${sid}__tractogram_ic.trk" into tractogram_for_recognition
+    script:
+    """
+    scil_remove_invalid_streamlines.py ${tractogram} ${sid}__tractogram_ic.trk
+    """
+}
+
 tractogram_for_recognition
     .combine(transformation_for_recognition, by: 0)
     .combine(atlas_config)
@@ -135,7 +146,7 @@ process Recognize_Bundles {
     script:
     """
     mkdir tmp/
-    scil_recognize_multi_bundles.py ${tractogram} ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
+    scil_recognize_multi_bundles.py tracking_ic.trk ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
         --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
         --tractogram_clustering_thr $params.wb_clustering_thr --seeds $params.seeds --processes $params.rbx_processes
     mv tmp/* ./
