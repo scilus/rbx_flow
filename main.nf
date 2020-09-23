@@ -56,29 +56,28 @@ log.info ""
 log.info "Input: $params.root"
 root = file(params.root)
 /* Watch out, files are ordered alphabetically in channel */
-    in_data = Channel
-        .fromFilePairs("$root/**/{*tracking.trk,*fa.nii.gz}",
-                        size: 2,
-                        maxDepth:2,
-                        flat: true) {it.parent.name}
+Channel
+    .fromPath("$root/**/*tracking*.trk",
+                    maxDepth:1)
+    .map{[it.parent.name, it]}
+    .set{tractogram_for_recognition}
 
-    atlas_anat = Channel.fromPath("$params.atlas_anat")
-    atlas_config = Channel.fromPath("$params.atlas_config")
-    atlas_directory = Channel.fromPath("$params.atlas_directory")
+Channel
+    .fromPath("$root/**/*fa.nii.gz",
+                    maxDepth:1)
+    .map{[it.parent.name, it]}
+    .into{anat_for_registration;anat_for_reference_c;anat_for_reference_b}
 
-    if (params.atlas_centroids) {
-        atlas_centroids = Channel.fromPath("$params.atlas_centroids/*_centroid.trk")
-    }
-    else {
-        atlas_centroids = Channel.empty()
-    }
+atlas_anat = Channel.fromPath("$params.atlas_anat")
+atlas_config = Channel.fromPath("$params.atlas_config")
+atlas_directory = Channel.fromPath("$params.atlas_directory")
 
-(anat_for_registration, anat_for_reference, tractogram_for_recognition) = in_data
-    .map{sid, anat, tractogram -> 
-        [tuple(sid, anat),
-        tuple(sid, anat),
-        tuple(sid, tractogram)]}
-    .separate(3)
+if (params.atlas_centroids) {
+    atlas_centroids = Channel.fromPath("$params.atlas_centroids/*_centroid.trk")
+}
+else {
+    atlas_centroids = Channel.empty()
+}
 
 workflow.onComplete {
     log.info "Pipeline completed at: $workflow.complete"
@@ -104,7 +103,7 @@ process Register_Anat {
 }
 
 
-anat_for_reference
+anat_for_reference_c
     .join(transformation_for_centroids, by: 0)
     .set{anat_and_transformation}
 process Transform_Centroids {
@@ -121,21 +120,22 @@ process Transform_Centroids {
 
 
 tractogram_for_recognition
-    .combine(transformation_for_recognition, by: 0)
+    .join(anat_for_reference_b)
+    .join(transformation_for_recognition)
     .combine(atlas_config)
     .combine(atlas_directory)
     .set{tractogram_and_transformation}
 process Recognize_Bundles {
     cpus params.rbx_processes
     input:
-    set sid, file(tractogram), file(transfo), file(config), file(directory) from tractogram_and_transformation
+    set sid, file(tractogram), file(refenrence), file(transfo), file(config), file(directory) from tractogram_and_transformation
     output:
     set sid, "*.trk" into bundles_for_cleaning
     file "results.json"
     file "logfile.txt"
     script:
     """
-    scil_remove_invalid_streamlines.py ${tractogram} tractogram_ic.trk
+    scil_remove_invalid_streamlines.py ${tractogram} tractogram_ic.trk --reference ${refenrence}
     mkdir tmp/
     scil_recognize_multi_bundles.py tractogram_ic.trk ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
         --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
