@@ -66,7 +66,12 @@ Channel
     .fromPath("$root/**/*fa.nii.gz",
                     maxDepth:1)
     .map{[it.parent.name, it]}
-    .into{anat_for_registration;anat_for_reference_c;anat_for_reference_b}
+    .into{anat_for_registration;anat_for_reference_centroids;anat_for_reference_bundles}
+
+if (!(params.atlas_anat) || !(params.atlas_config) || !(params.atlas_directory)) {
+    error "You must specify all 3 atlas related input. --atlas_anat, " +
+    "--atlas_config and --atlas_directory all are mandatory."
+}
 
 atlas_anat = Channel.fromPath("$params.atlas_anat")
 atlas_config = Channel.fromPath("$params.atlas_config")
@@ -103,7 +108,7 @@ process Register_Anat {
 }
 
 
-anat_for_reference_c
+anat_for_reference_centroids
     .join(transformation_for_centroids, by: 0)
     .set{anat_and_transformation}
 process Transform_Centroids {
@@ -120,7 +125,7 @@ process Transform_Centroids {
 
 
 tractogram_for_recognition
-    .join(anat_for_reference_b)
+    .join(anat_for_reference_bundles)
     .join(transformation_for_recognition)
     .combine(atlas_config)
     .combine(atlas_directory)
