@@ -132,6 +132,8 @@ tractogram_for_recognition
     .set{tractogram_and_transformation}
 process Recognize_Bundles {
     cpus params.rbx_processes
+    memory params.rbx_memory_limit
+
     input:
     set sid, file(tractogram), file(refenrence), file(transfo), file(config), file(directory) from tractogram_and_transformation
     output:
