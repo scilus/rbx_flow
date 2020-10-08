@@ -95,6 +95,8 @@ anat_for_registration
     .set{anats_for_registration}
 process Register_Anat {
     cpus params.register_processes
+    memory '2 GB'
+
     input:
     set sid, file(native_anat), file(atlas) from anats_for_registration
 
