@@ -144,7 +144,7 @@ process Recognize_Bundles {
     file "logfile.txt"
     script:
     """
-    scil_remove_invalid_streamlines.py ${tractogram} tractogram_ic.trk --reference ${refenrence}
+    scil_remove_invalid_streamlines.py ${tractogram} tractogram_ic.trk --reference ${refenrence} --remove_single_point --remove_overlapping_points
     mkdir tmp/
     scil_recognize_multi_bundles.py tractogram_ic.trk ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
         --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
