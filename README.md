@@ -2,10 +2,15 @@
 ===================
 
 Run the RecobundlesX pipeline.
+To access the example atlases:
+https://zenodo.org/record/4104300#.X4xdG51KhdU
 
 If you use this pipeline, please cite:
 
 ```
+Rheault, Francois. Analyse et reconstruction de faisceaux de la matière blanche.
+page 137-170, (2020), https://savoirs.usherbrooke.ca/handle/11143/17255
+
 Garyfallidis, Eleftherios, et al. Recognition of white matter bundles using
 local and global streamline-based registration and clustering.
 NeuroImage 170 (2018) https://doi.org/10.1016/j.neuroimage.2017.07.015

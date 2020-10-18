@@ -53,8 +53,8 @@ log.info "Outlier Removal Alpha: $params.outlier_alpha"
 log.info ""
 log.info ""
 
-log.info "Input: $params.root"
-root = file(params.root)
+log.info "Input: $params.input"
+root = file(params.input)
 /* Watch out, files are ordered alphabetically in channel */
 Channel
     .fromPath("$root/**/*tracking*.trk",
