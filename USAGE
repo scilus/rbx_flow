@@ -3,15 +3,15 @@ Pipeline for RecobundlesX tractography
 
 USAGE
 
-nextflow run main.nf --root ... [OPTIONAL_ARGUMENTS]
+nextflow run main.nf --input ... [OPTIONAL_ARGUMENTS]
 
 DESCRIPTION
 
---root=/path/to/[root]              Root folder containing multiple subjects
+--input=/path/to/[root]              Root folder containing multiple subjects
 
                                     [root]
                                     ├── S1
-                                    │   ├── *anat.nii.gz
+                                    │   ├── *fa.nii.gz
                                     │   └── *tracking.trk
                                     └── S2
                                         └── *
