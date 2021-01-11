@@ -73,7 +73,8 @@ if (!(params.atlas_anat) || !(params.atlas_config) || !(params.atlas_directory))
     "--atlas_config and --atlas_directory all are mandatory."
 }
 
-atlas_anat = Channel.fromPath("$params.atlas_anat")
+Channel.fromPath("$params.atlas_anat")
+    .into{atlas_anat;atlas_anat_for_average}
 atlas_config = Channel.fromPath("$params.atlas_config")
 atlas_directory = Channel.fromPath("$params.atlas_directory")
 
@@ -102,6 +103,7 @@ process Register_Anat {
 
     output:
     set sid, "${sid}__output0GenericAffine.mat" into transformation_for_recognition, transformation_for_centroids
+    set sid, "${sid}__output0GenericAffine.mat" into transformation_for_average
     file "${sid}__outputWarped.nii.gz"
     script:
     """
@@ -161,10 +163,46 @@ process Clean_Bundles {
     input:
     set sid, file(bundle) from all_bundles_for_cleaning
     output:
-    file "${sid}__*_cleaned.trk"
+    set sid, val(bname), "${sid}__*_cleaned.trk" into bundle_for_density
     script:
     bname = bundle.name.take(bundle.name.lastIndexOf('.'))
     """
     scil_outlier_rejection.py ${bundle} "${sid}__${bname}_cleaned.trk" --alpha $params.outlier_alpha
+    """ 
+}
+
+bundle_for_density
+    .combine(transformation_for_average, by:0)
+    .combine(atlas_anat_for_average)
+    .set{all_bundles_transfo_for_average}
+process Compute_Density_Bundles {
+    input:
+    set sid, val(bname), file(bundle), file(transfo), file(atlas) from all_bundles_transfo_for_average
+    output:
+    set bname, "*.nii.gz" into bundle_for_average
+    script:
+    """
+    scil_apply_transform_to_tractogram.py $bundle $atlas $transfo tmp.trk
+    scil_compute_streamlines_density_map.py tmp.trk "${sid}__${bname}_density.nii.gz"
+    scil_image_math.py lower_threshold "${sid}__${bname}_density.nii.gz" 1 "${sid}__${bname}_binary.nii.gz"
+    """ 
+}
+
+
+bundle_for_average
+    .flatMap{ sid, bundles -> bundles.collect{[sid, it]} }
+    .groupTuple(by: 0)
+    .set{all_bundle_for_average}
+process Average_Bundles {
+    publishDir = "Average_Bundles/"
+    input:
+    set val(bname), file(bundles_bin) from all_bundle_for_average
+    output:
+    file "${bname}_density.nii.gz"
+    file "${bname}_binary.nii.gz"
+    script:
+    """
+    scil_image_math.py mean *_density.nii.gz 1 ${bname}_density.nii.gz
+    scil_image_math.py mean *_binary.nii.gz 1 ${bname}_binary.nii.gz
     """ 
 }
