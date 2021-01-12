@@ -194,7 +194,7 @@ bundle_for_average
     .groupTuple(by: 0)
     .set{all_bundle_for_average}
 process Average_Bundles {
-    publishDir = "Average_Bundles/"
+    publishDir = "./results_rbx/Average_Bundles/"
     input:
     set val(bname), file(bundles_bin) from all_bundle_for_average
     output:
