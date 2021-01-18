@@ -202,7 +202,7 @@ process Average_Bundles {
     file "${bname}_binary.nii.gz"
     script:
     """
-    scil_image_math.py mean *_density.nii.gz 1 ${bname}_density.nii.gz
-    scil_image_math.py mean *_binary.nii.gz 1 ${bname}_binary.nii.gz
+    scil_image_math.py addition *_density.nii.gz 0 ${bname}_density.nii.gz
+    scil_image_math.py addition *_binary.nii.gz 0 ${bname}_binary.nii.gz
     """ 
 }
