@@ -167,7 +167,8 @@ process Clean_Bundles {
     script:
     bname = bundle.name.take(bundle.name.lastIndexOf('.'))
     """
-    scil_outlier_rejection.py ${bundle} "${sid}__${bname}_cleaned.trk" --alpha $params.outlier_alpha
+    touch "${sid}__${bname}_cleaned.trk"
+    scil_outlier_rejection.py ${bundle} "${sid}__${bname}_cleaned.trk" --alpha $params.outlier_alpha -f
     """ 
 }
 
@@ -182,7 +183,7 @@ process Compute_Density_Bundles {
     set bname, "*.nii.gz" into bundle_for_average
     script:
     """
-    scil_apply_transform_to_tractogram.py $bundle $atlas $transfo tmp.trk
+    scil_apply_transform_to_tractogram.py $bundle $atlas $transfo tmp.trk --remove_invalid
     scil_compute_streamlines_density_map.py tmp.trk "${sid}__${bname}_density.nii.gz"
     scil_image_math.py lower_threshold "${sid}__${bname}_density.nii.gz" 1 "${sid}__${bname}_binary.nii.gz"
     """ 
