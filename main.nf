@@ -163,12 +163,11 @@ process Clean_Bundles {
     input:
     set sid, file(bundle) from all_bundles_for_cleaning
     output:
-    set sid, val(bname), "${sid}__*_cleaned.trk" into bundle_for_density
+    set sid, val(bname), "${sid}__*_cleaned.trk" optional true into bundle_for_density
     script:
     bname = bundle.name.take(bundle.name.lastIndexOf('.'))
     """
-    touch "${sid}__${bname}_cleaned.trk"
-    scil_outlier_rejection.py ${bundle} "${sid}__${bname}_cleaned.trk" --alpha $params.outlier_alpha -f
+    scil_outlier_rejection.py ${bundle} "${sid}__${bname}_cleaned.trk" --alpha $params.outlier_alpha
     """ 
 }
 
