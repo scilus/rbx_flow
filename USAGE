@@ -20,9 +20,8 @@ DESCRIPTION
     --atlas_anat                        Path to reference anatomy of the atlas
     --atlas_directory                   Path of the folder containing all atlases
 
-    NOTES
-
     OPTIONAL ARGUMENTS (current value)
+
     --atlas_centroids                       Folder containing centroids (trk) for future tractometry (Must have the same filename as in the atlas_config)
 
     --multi_parameters                      Number of executions for the multi-parameters ($multi_parameters)
@@ -36,7 +35,18 @@ DESCRIPTION
     --processes                             The number of parallel processes to launch ($cpu_count).
                                             Only affects the local scheduler.
 
+AVAILABLE PROFILES (using -profile option (e.g. -profile large_dataset,cbrain))
+
+large_dataset                               When this profile is used, rbx_flow will be asking for 16 GB instead of 8 GB.
+
+fully_reproducible                          When this profile is used, all the parameters will be set to have 100% reproducible results.
+
+macos                                       When this profile is used, rbx_flow will modify a parameter (scratch) for MacOS users.
+
+cbrain                                      When this profile is used, Nextflow will copy all the output files in publishDir and not use symlinks.
+
+NOTES
+
 Use '-C config_file.config' to specify a non-default configuration file.
 The '-C config_file.config' must be inserted after the nextflow call
 like 'nextflow -C config_file.config run ...'.
-
