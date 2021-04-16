@@ -35,6 +35,10 @@ DESCRIPTION
     --processes                             The number of parallel processes to launch ($cpu_count).
                                             Only affects the local scheduler.
 
+    --output_dir                            Directory where to write the final results.
+                                            By default, will be in "./results_rbx"
+
+
 AVAILABLE PROFILES (using -profile option (e.g. -profile large_dataset,cbrain))
 
 large_dataset                               When this profile is used, rbx_flow will be asking for 16 GB instead of 8 GB.
