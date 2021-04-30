@@ -13,7 +13,8 @@ if(params.help) {
                 "seeds":"$params.seeds",
                 "outlier_alpha":"$params.outlier_alpha",
                 "register_processes":"$params.register_processes",
-                "rbx_processes":"$params.rbx_processes"]
+                "rbx_processes":"$params.rbx_processes",
+                "cpu_count":"$cpu_count"]
 
     engine = new groovy.text.SimpleTemplateEngine()
     template = engine.createTemplate(usage.text).make(bindings)
@@ -105,10 +106,12 @@ process Register_Anat {
     set sid, "${sid}__output0GenericAffine.mat" into transformation_for_recognition, transformation_for_centroids
     set sid, "${sid}__output0GenericAffine.mat" into transformation_for_average
     file "${sid}__outputWarped.nii.gz"
+    file "${sid}__native_anat.nii.gz"
     script:
     """
     antsRegistrationSyNQuick.sh -d 3 -f ${native_anat} -m ${atlas} -n ${params.register_processes} -o ${sid}__output -t a
-    """ 
+    cp ${native_anat} ${sid}__native_anat.nii.gz
+    """
 }
 
 
@@ -124,7 +127,7 @@ process Transform_Centroids {
     script:
     """
     scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}.trk --inverse --cut_invalid
-    """ 
+    """
 }
 
 
@@ -153,7 +156,7 @@ process Recognize_Bundles {
         --tractogram_clustering_thr $params.wb_clustering_thr --seeds $params.seeds --processes $params.rbx_processes
     rm tractogram_ic.trk
     mv tmp/* ./
-    """ 
+    """
 }
 
 bundles_for_cleaning
@@ -168,7 +171,7 @@ process Clean_Bundles {
     bname = bundle.name.take(bundle.name.lastIndexOf('.'))
     """
     scil_outlier_rejection.py ${bundle} "${sid}__${bname}_cleaned.trk" --alpha $params.outlier_alpha
-    """ 
+    """
 }
 
 bundle_for_density
@@ -185,7 +188,7 @@ process Compute_Density_Bundles {
     scil_apply_transform_to_tractogram.py $bundle $atlas $transfo tmp.trk --remove_invalid
     scil_compute_streamlines_density_map.py tmp.trk "${sid}__${bname}_density.nii.gz"
     scil_image_math.py lower_threshold "${sid}__${bname}_density.nii.gz" 1 "${sid}__${bname}_binary.nii.gz"
-    """ 
+    """
 }
 
 
@@ -204,5 +207,5 @@ process Average_Bundles {
     """
     scil_image_math.py addition *_density.nii.gz 0 ${bname}_density.nii.gz
     scil_image_math.py addition *_binary.nii.gz 0 ${bname}_binary.nii.gz
-    """ 
+    """
 }
