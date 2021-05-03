@@ -109,6 +109,7 @@ process Register_Anat {
     file "${sid}__native_anat.nii.gz"
     script:
     """
+    export ANTS_RANDOM_SEED=1234
     antsRegistrationSyNQuick.sh -d 3 -f ${native_anat} -m ${atlas} -n ${params.register_processes} -o ${sid}__output -t a
     cp ${native_anat} ${sid}__native_anat.nii.gz
     """
