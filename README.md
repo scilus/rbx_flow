@@ -3,7 +3,7 @@
 
 Run the RecobundlesX pipeline.
 To access the example atlases:
-https://zenodo.org/record/4104300#.X4xdG51KhdU
+https://zenodo.org/record/4630660#.YJvmwXVKhdU
 
 If you use this pipeline, please cite:
 
@@ -29,6 +29,19 @@ Requirements
 - [Nextflow](https://www.nextflow.io)
 - [scilpy](https://github.com/scilus/scilpy)
 - [ants](https://github.com/ANTsX/ANTs)
+
+Singularity/Docker
+-----------
+If you are on Linux, we recommend using the Singularity to run rbx_flow pipeline.
+If you have Singularity == 3.*, launch your Nextflow command with:
+`-with-singularity scilus-1.1.0_rbxflow-1.0.0.img`
+
+If you have rebuild singularity Singularity == 2.* image is available [here](http://scil.dinf.usherbrooke.ca/en/containers_list/scilus-1.1.0_rbxflow-1.0.0.img)
+Launch your Nextflow command with: `-with-singularity ABSOLUTE_PATH/scilus-1.1.0_rbxflow-1.0.0.img`
+
+If you are on MacOS or Windows, we recommend using the Docker container to run rbx_flow pipeline.
+Launch your Nextflow command with:
+`-with-docker scilus-1.1.0_rbxflow-1.0.0.img`
 
 Usage
 -----

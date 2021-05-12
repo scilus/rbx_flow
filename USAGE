@@ -4,6 +4,11 @@ Pipeline for RecobundlesX tractography
 USAGE
 
 nextflow run main.nf --input ... [OPTIONAL_ARGUMENTS]
+To call with a container add:
+    -with-singularity scilus-1.1.0_rbxflow-1.0.0.img
+    -with-docker scilus-1.1.0_rbxflow-1.0.0.img
+
+The recommanded atlas is available at https://zenodo.org/record/4630660#.YJvmwXVKhdU
 
 DESCRIPTION
 
@@ -22,7 +27,7 @@ DESCRIPTION
 
     OPTIONAL ARGUMENTS (current value)
 
-    --atlas_centroids                       Folder containing centroids (trk) for future tractometry (Must have the same filename as in the atlas_config)
+    --atlas_centroids                       Folder containing centroids (trk) for future tractometry (Must have the same basename as in the atlas_config + '_centroids')
 
     --multi_parameters                      Number of executions for the multi-parameters ($multi_parameters)
     --minimal_vote_ratio                    Percentage of the vote to obtain in order to be considered valid ($minimal_vote_ratio)
