@@ -34,14 +34,14 @@ Singularity/Docker
 -----------
 If you are on Linux, we recommend using the Singularity to run rbx_flow pipeline.
 If you have Singularity == 3.*, launch your Nextflow command with:
-`-with-singularity scilus-1.1.0_rbxflow-1.0.0.img`
+`-with-singularity scilus/scilus:1.1.0_rbxflow-1.0.0`
 
 If you have rebuild singularity Singularity == 2.* image is available [here](http://scil.dinf.usherbrooke.ca/en/containers_list/scilus-1.1.0_rbxflow-1.0.0.img)
 Launch your Nextflow command with: `-with-singularity ABSOLUTE_PATH/scilus-1.1.0_rbxflow-1.0.0.img`
 
 If you are on MacOS or Windows, we recommend using the Docker container to run rbx_flow pipeline.
 Launch your Nextflow command with:
-`-with-docker scilus-1.1.0_rbxflow-1.0.0.img`
+`-with-docker scilus/scilus:1.1.0_rbxflow-1.0.0`
 
 Usage
 -----

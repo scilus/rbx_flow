@@ -5,8 +5,8 @@ USAGE
 
 nextflow run main.nf --input ... [OPTIONAL_ARGUMENTS]
 To call with a container add:
-    -with-singularity scilus-1.1.0_rbxflow-1.0.0.img
-    -with-docker scilus-1.1.0_rbxflow-1.0.0.img
+    -with-singularity scilus/scilus:1.1.0_rbxflow-1.0.0
+    -with-docker scilus/scilus:1.1.0_rbxflow-1.0.0
 
 The recommanded atlas is available at https://zenodo.org/record/4630660#.YJvmwXVKhdU
 
