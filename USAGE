@@ -28,6 +28,7 @@ DESCRIPTION
     OPTIONAL ARGUMENTS (current value)
 
     --atlas_centroids                       Folder containing centroids (trk) for future tractometry (Must have the same basename as in the atlas_config + '_centroids')
+    --run_average_bundles                   Run average bundles ($run_average_bundles)
 
     --multi_parameters                      Number of executions for the multi-parameters ($multi_parameters)
     --minimal_vote_ratio                    Percentage of the vote to obtain in order to be considered valid ($minimal_vote_ratio)
