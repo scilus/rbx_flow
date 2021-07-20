@@ -1,6 +1,9 @@
 # RecobundlesX pipeline
 ===================
 
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/scilus/rbx_flow)](https://github.com/scilus/rbx_flow/releases)
+
+
 Run the RecobundlesX pipeline.
 To access the example atlases:
 https://zenodo.org/record/4630660#.YJvmwXVKhdU
