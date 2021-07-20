@@ -57,11 +57,10 @@ log.info ""
 log.info "Input: $params.input"
 root = file(params.input)
 /* Watch out, files are ordered alphabetically in channel */
-Channel
-    .fromPath("$root/**/*tracking*.trk",
-                    maxDepth:1)
-    .map{[it.parent.name, it]}
-    .set{tractogram_for_recognition}
+tractogram_for_recognition = Channel
+     .fromFilePairs("$root/**/{*tracking*.*,}",
+                    size: -1,
+                    maxDepth:1) {it.parent.name}
 
 Channel
     .fromPath("$root/**/*fa.nii.gz",
