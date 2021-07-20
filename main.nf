@@ -143,14 +143,19 @@ process Recognize_Bundles {
     memory params.rbx_memory_limit
 
     input:
-    set sid, file(tractogram), file(refenrence), file(transfo), file(config), file(directory) from tractogram_and_transformation
+    set sid, file(tractograms), file(refenrence), file(transfo), file(config), file(directory) from tractogram_and_transformation
     output:
     set sid, "*.trk" into bundles_for_cleaning
     file "results.json"
     file "logfile.txt"
     script:
     """
-    scil_remove_invalid_streamlines.py ${tractogram} tractogram_ic.trk --reference ${refenrence} --remove_single_point --remove_overlapping_points
+    if [ `echo $tractograms | wc -w` -gt 1 ]; then
+        scil_streamlines_math.py lazy_concatenate $tractograms tracking_concat.trk
+    else
+        mv $tractograms tracking_concat.trk
+    fi
+    scil_remove_invalid_streamlines.py tracking_concat.trk tractogram_ic.trk --reference ${refenrence} --remove_single_point --remove_overlapping_points
     mkdir tmp/
     scil_recognize_multi_bundles.py tractogram_ic.trk ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
         --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
