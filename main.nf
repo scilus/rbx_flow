@@ -7,6 +7,7 @@ if(params.help) {
     bindings = ["atlas_config":"$params.atlas_config",
                 "atlas_directory":"$params.atlas_directory",
                 "atlas_centroids":"$params.atlas_centroids",
+                "run_average_bundles":"$params.run_average_bundles",
                 "multi_parameters":"$params.multi_parameters",
                 "minimal_vote_ratio":"$params.minimal_vote_ratio",
                 "wb_clustering_thr":"$params.wb_clustering_thr",
@@ -184,6 +185,8 @@ process Compute_Density_Bundles {
     set sid, val(bname), file(bundle), file(transfo), file(atlas) from all_bundles_transfo_for_average
     output:
     set bname, "*.nii.gz" into bundle_for_average
+    when:
+    params.run_average_bundles
     script:
     """
     scil_apply_transform_to_tractogram.py $bundle $atlas $transfo tmp.trk --remove_invalid
