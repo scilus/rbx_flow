@@ -160,7 +160,7 @@ process Recognize_Bundles {
     scil_recognize_multi_bundles.py tractogram_ic.trk ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
         --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
         --tractogram_clustering_thr $params.wb_clustering_thr --seeds $params.seeds --processes $params.rbx_processes
-    rm tractogram_ic.trk
+    rm tractogram_ic.trk tracking_concat.trk
     mv tmp/* ./
     """
 }
