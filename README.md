@@ -6,7 +6,7 @@
 
 Run the RecobundlesX pipeline.
 To access the example atlases:
-https://zenodo.org/record/4630660#.YJvmwXVKhdU
+https://zenodo.org/record/4104300#.YmMEk_PMJaQ
 
 If you use this pipeline, please cite:
 
