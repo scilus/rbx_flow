@@ -127,7 +127,8 @@ process Transform_Centroids {
     file "${sid}__${centroid.baseName}.trk"
     script:
     """
-    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} ${sid}__${centroid.baseName}.trk --inverse --cut_invalid
+    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} tmp.trk --inverse
+    scil_remove_invalid_streamlines.py tmp.trk ${sid}__${centroid.baseName}.trk --cut_invalid --remove_single_point --remove_overlapping_points --no_empty
     """
 }
 
