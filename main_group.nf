@@ -131,10 +131,10 @@ process Transform_Centroids {
     set sid, file(anat), file(transfo) from anat_and_transformation
     each file(centroid) from atlas_centroids
     output:
-    file "${sid}__${centroid.baseName}.trk"
+    file "${sid}__${centroid.baseName}.trk" optional true
     script:
     """
-    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} tmp.trk --inverse
+    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} tmp.trk --inverse --keep_invalid
     scil_remove_invalid_streamlines.py tmp.trk ${sid}__${centroid.baseName}.trk --cut_invalid --remove_single_point --remove_overlapping_points --no_empty
     """
 }
