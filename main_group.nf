@@ -24,7 +24,7 @@ if(params.help) {
 }
 
 log.info "SCIL RecobundlesX pipeline"
-log.info "=========================="
+log.info "==========================="
 log.info ""
 log.info "Start time: $workflow.start"
 log.info ""
@@ -58,7 +58,7 @@ log.info ""
 log.info "Input: $params.input"
 root = file(params.input)
 /* Watch out, files are ordered alphabetically in channel */
-tractogram_for_recognition = Channel
+tractogram_for_recognition_group = Channel
      .fromFilePairs("$root/**/{*tracking*.*,}",
                     size: -1,
                     maxDepth:1) {it.parent.name}
@@ -67,17 +67,24 @@ Channel
     .fromPath("$root/**/*fa.nii.gz",
                     maxDepth:1)
     .map{[it.parent.name, it]}
-    .into{anat_for_registration;anat_for_reference_centroids;anat_for_reference_bundles}
+    .into{anat_for_registration;anat_for_reference_centroids;anat_for_reference_bundles_group;anat_for_reference_bundles}
 
-if (!(params.atlas_anat) || !(params.atlas_config) || !(params.atlas_directory)) {
-    error "You must specify all 3 atlas related input. --atlas_anat, " +
-    "--atlas_config and --atlas_directory all are mandatory."
-}
+Channel
+    .fromPath("$params.atlas_directory/*.nii.gz",
+                    maxDepth:1)
+    .into{atlas_anat_for_registration;atlas_anat_for_average}
 
-Channel.fromPath("$params.atlas_anat")
-    .into{atlas_anat;atlas_anat_for_average}
-atlas_config = Channel.fromPath("$params.atlas_config")
-atlas_directory = Channel.fromPath("$params.atlas_directory")
+Channel
+    .fromPath("$params.atlas_directory/*_group.json",
+                    maxDepth:1)
+    .map{it -> [it.baseName, it]}
+    .set{atlas_configs}
+
+atlas_config_group = Channel.fromPath("$params.atlas_directory/config_groups.json")
+Channel
+    .fromPath("$params.atlas_directory/atlas/",
+                    maxDepth:1)
+    .into{atlas_directory_group;atlas_directory}
 
 if (params.atlas_centroids) {
     atlas_centroids = Channel.fromPath("$params.atlas_centroids/*_centroid.trk")
@@ -93,7 +100,7 @@ workflow.onComplete {
 }
 
 anat_for_registration
-    .combine(atlas_anat)
+    .combine(atlas_anat_for_registration)
     .set{anats_for_registration}
 process Register_Anat {
     cpus params.register_processes
@@ -103,7 +110,7 @@ process Register_Anat {
     set sid, file(native_anat), file(atlas) from anats_for_registration
 
     output:
-    set sid, "${sid}__output0GenericAffine.mat" into transformation_for_recognition, transformation_for_centroids
+    set sid, "${sid}__output0GenericAffine.mat" into transformation_for_recognition_group, transformation_for_recognition, transformation_for_centroids
     set sid, "${sid}__output0GenericAffine.mat" into transformation_for_average
     file "${sid}__outputWarped.nii.gz"
     file "${sid}__native_anat.nii.gz"
@@ -133,20 +140,20 @@ process Transform_Centroids {
 }
 
 
-tractogram_for_recognition
-    .join(anat_for_reference_bundles)
-    .join(transformation_for_recognition)
-    .combine(atlas_config)
-    .combine(atlas_directory)
-    .set{tractogram_and_transformation}
-process Recognize_Bundles {
+tractogram_for_recognition_group
+    .join(anat_for_reference_bundles_group)
+    .join(transformation_for_recognition_group)
+    .combine(atlas_config_group)
+    .combine(atlas_directory_group)
+    .set{tractogram_and_transformation_group}
+process Recognize_Bundles_Group {
     cpus params.rbx_processes
     memory params.rbx_memory_limit
 
     input:
-    set sid, file(tractograms), file(refenrence), file(transfo), file(config), file(directory) from tractogram_and_transformation
+    set sid, file(tractograms), file(reference), file(transfo), file(config), file(directory) from tractogram_and_transformation_group
     output:
-    set sid, "*.trk" into bundles_for_cleaning
+    set sid, "*.trk" into bundles_for_sub_reco, tmp
     file "results.json"
     file "logfile.txt"
     script:
@@ -156,12 +163,41 @@ process Recognize_Bundles {
     else
         mv $tractograms tracking_concat.trk
     fi
-    scil_remove_invalid_streamlines.py tracking_concat.trk tractogram_ic.trk --reference ${refenrence} --remove_single_point --remove_overlapping_points
+    scil_remove_invalid_streamlines.py tracking_concat.trk tractogram_ic.trk --reference ${reference} --remove_single_point --remove_overlapping_points
     mkdir tmp/
     scil_recognize_multi_bundles.py tractogram_ic.trk ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
+        --log_level DEBUG --multi_parameters 8 --minimal_vote_ratio 0.5 \
+        --tractogram_clustering_thr 12 15 18 --seeds 0 --processes $params.rbx_processes
+    rm tractogram_ic.trk tracking_concat.trk
+    mv tmp/* ./
+    """
+}
+
+
+bundles_for_sub_reco
+    .transpose()
+    .combine(anat_for_reference_bundles, by: 0)
+    .combine(transformation_for_recognition, by: 0)
+    .combine(atlas_directory)
+    .map{it -> [it[1].baseName, it[0], it[1], it[2], it[3], it[4]]}
+    .combine(atlas_configs, by:0)
+    .set{tractogram_and_transformation_config}
+process Recognize_Bundles {
+    cpus params.rbx_processes
+    memory params.rbx_memory_limit
+
+    input:
+    set gName, sid, file(tractogram), file(reference), file(transfo), file(directory), file(config) from tractogram_and_transformation_config
+    output:
+    set sid, "*.trk" optional true into bundles_for_cleaning
+    file "results.json" optional true 
+    file "logfile.txt" optional true 
+    script:
+    """
+    mkdir tmp/
+    scil_recognize_multi_bundles.py ${tractogram} ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
         --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
         --tractogram_clustering_thr $params.wb_clustering_thr --seeds $params.seeds --processes $params.rbx_processes
-    rm tractogram_ic.trk tracking_concat.trk
     mv tmp/* ./
     """
 }

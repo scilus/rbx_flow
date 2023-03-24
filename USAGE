@@ -4,11 +4,13 @@ Pipeline for RecobundlesX tractography
 USAGE
 
 nextflow run main.nf --input ... [OPTIONAL_ARGUMENTS]
+nextflow run main_group.nf --input ... [OPTIONAL_ARGUMENTS]
 To call with a container add:
     -with-singularity scilus/scilus:1.2.0_rbxflow-1.1.0
     -with-docker scilus/scilus:1.2.0_rbxflow-1.1.0
 
 The recommanded atlas is available at https://zenodo.org/record/4630660#.YJvmwXVKhdU
+The main_group.nf is an attempt at a hierarchical approach, use with a configuration file with groups.
 
 DESCRIPTION
 
@@ -47,7 +49,7 @@ DESCRIPTION
 
 AVAILABLE PROFILES (using -profile option (e.g. -profile large_dataset,cbrain))
 
-large_dataset                               When this profile is used, rbx_flow will be asking for 16 GB instead of 8 GB.
+large_dataset                               When this profile is used (>2M streamlines), rbx_flow will be asking for 16 GB instead of 8 GB.
 
 fully_reproducible                          When this profile is used, all the parameters will be set to have 100% reproducible results.
 
