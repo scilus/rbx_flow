@@ -8,9 +8,7 @@ if(params.help) {
                 "atlas_directory":"$params.atlas_directory",
                 "atlas_centroids":"$params.atlas_centroids",
                 "run_average_bundles":"$params.run_average_bundles",
-                "multi_parameters":"$params.multi_parameters",
                 "minimal_vote_ratio":"$params.minimal_vote_ratio",
-                "wb_clustering_thr":"$params.wb_clustering_thr",
                 "seeds":"$params.seeds",
                 "outlier_alpha":"$params.outlier_alpha",
                 "register_processes":"$params.register_processes",
@@ -47,10 +45,8 @@ log.info "Atlas Directory: $params.atlas_directory"
 log.info "Atlas Centroids: $params.atlas_centroids"
 log.info ""
 log.info "[Recobundles options]"
-log.info "Multi-Parameters Executions: $params.multi_parameters"
 log.info "Minimal Vote Percentage: $params.minimal_vote_ratio"
-log.info "Whole Brain Clustering Threshold: $params.wb_clustering_thr"
-log.info "Random Seeds: $params.seeds"
+log.info "Random Seed: $params.seed"
 log.info "Outlier Removal Alpha: $params.outlier_alpha"
 log.info ""
 log.info ""
@@ -151,17 +147,10 @@ process Recognize_Bundles {
     file "logfile.txt"
     script:
     """
-    if [ `echo $tractograms | wc -w` -gt 1 ]; then
-        scil_streamlines_math.py lazy_concatenate $tractograms tracking_concat.trk
-    else
-        mv $tractograms tracking_concat.trk
-    fi
-    scil_remove_invalid_streamlines.py tracking_concat.trk tractogram_ic.trk --reference ${refenrence} --remove_single_point --remove_overlapping_points
     mkdir tmp/
-    scil_recognize_multi_bundles.py tractogram_ic.trk ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
-        --log_level DEBUG --multi_parameters $params.multi_parameters --minimal_vote_ratio $params.minimal_vote_ratio \
-        --tractogram_clustering_thr $params.wb_clustering_thr --seeds $params.seeds --processes $params.rbx_processes
-    rm tractogram_ic.trk tracking_concat.trk
+    scil_recognize_multi_bundles.py $tractograms ${config} ${directory}/*/ ${transfo} --inverse --out_dir tmp/ \
+        --log_level DEBUG --minimal_vote_ratio $params.minimal_vote_ratio \
+        --seed $params.seed --processes $params.rbx_processes
     mv tmp/* ./
     """
 }
