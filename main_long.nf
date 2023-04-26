@@ -213,7 +213,7 @@ process Clean_Bundles {
     set sid, sess, file(bundle) from all_bundles_for_cleaning
 
     output:
-    set sid, sess, val(bname), "${sid}__*_cleaned.trk" optional true into bundle_for_density
+    set sid, sess, val(bname), "${sid}-${sess}__*_cleaned.trk" optional true into bundle_for_density
     script:
     bname = bundle.name.take(bundle.name.lastIndexOf('.'))
     """
