@@ -142,7 +142,7 @@ tractograms_for_recognition_first
     .combine(atlas_directory)
     .combine(atlas_anat_for_revert)
     .set{tractograms_and_transformation_atlas}
-process Recognize_Bundles_Intial_MNI {
+process Recognize_Bundles_Initial_MNI {
     publishDir = {"./results_rbx/$sid/$sess/$task.process/"}
     memory { params.single_dataset_size_GB.GB * params.rbx_processes }
     cpus params.rbx_processes
