@@ -217,7 +217,7 @@ process Clean_Bundles {
     script:
     bname = bundle.name.take(bundle.name.lastIndexOf('.'))
     """
-    scil_outlier_rejection.py ${bundle} "${sid}__${bname}_cleaned.trk" \
+    scil_outlier_rejection.py ${bundle} "${sid}-${sess}__${bname}_cleaned.trk" \
         --alpha $params.outlier_alpha
     """
 }
