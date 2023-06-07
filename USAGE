@@ -5,12 +5,23 @@ USAGE
 
 nextflow run main.nf --input ... [OPTIONAL_ARGUMENTS]
 nextflow run main_group.nf --input ... [OPTIONAL_ARGUMENTS]
-To call with a container add:
-    -with-singularity scilus/scilus:1.2.0_rbxflow-1.1.0
-    -with-docker scilus/scilus:1.2.0_rbxflow-1.1.0
+To call with a container add: (requires a new release)
+    -with-singularity scilus/scilus:1.6.0_rbxflow-2.0.0
+    -with-docker scilus/scilus:1.6.0_rbxflow-2.0.0
 
-The recommanded atlas is available at https://zenodo.org/record/4630660#.YJvmwXVKhdU
-The main_group.nf is an attempt at a hierarchical approach, use with a configuration file with groups.
+The recommanded atlas is available at https://zenodo.org/record/7950602
+The main_long.nf is an attempt at a longitudinal approachs.
+
+If using this pipeline, please read and cite the following publications:
+[1] Garyfallidis, Eleftherios, et al. "Recognition of white matter bundles using
+    local and global streamline-based registration and clustering."
+    NeuroImage (2018)
+[2] St-Onge, Etienne, Eleftherios Garyfallidis, and D. Louis Collins.
+    "Fast Streamline Search: An Exact Technique for Diffusion MRI Tractography."
+    Neuroinformatics (2022)
+[3] Rheault, François. "Analyse et reconstruction de faisceaux de la matière
+    blanche." Computer Science. Université de Sherbrooke (2020).
+	(Only chapter #4, in French)
 
 DESCRIPTION
 
