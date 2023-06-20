@@ -1,16 +1,25 @@
-Pipeline for RecobundlesX tractography
-======================================
+Pipeline for RecobundlesX
+=========================
 
 USAGE
 
 nextflow run main.nf --input ... [OPTIONAL_ARGUMENTS]
-nextflow run main_group.nf --input ... [OPTIONAL_ARGUMENTS]
-To call with a container add:
-    -with-singularity scilus/scilus:1.2.0_rbxflow-1.1.0
-    -with-docker scilus/scilus:1.2.0_rbxflow-1.1.0
+To call with a container add: (requires a new release)
+    -with-singularity scilus/scilus:1.6.0_rbxflow-2.0.0
+    -with-docker scilus/scilus:1.6.0_rbxflow-2.0.0
 
-The recommanded atlas is available at https://zenodo.org/record/4630660#.YJvmwXVKhdU
-The main_group.nf is an attempt at a hierarchical approach, use with a configuration file with groups.
+The recommanded atlas is available at https://zenodo.org/record/7950602
+
+If using this pipeline, please read and cite the following publications:
+[1] Garyfallidis, Eleftherios, et al. "Recognition of white matter bundles using
+    local and global streamline-based registration and clustering."
+    NeuroImage (2018)
+[2] St-Onge, Etienne, Eleftherios Garyfallidis, and D. Louis Collins.
+    "Fast Streamline Search: An Exact Technique for Diffusion MRI Tractography."
+    Neuroinformatics (2022)
+[3] Rheault, François. "Analyse et reconstruction de faisceaux de la matière
+    blanche." Computer Science. Université de Sherbrooke (2020).
+	(Only chapter #4, in French)
 
 DESCRIPTION
 
@@ -23,39 +32,38 @@ DESCRIPTION
                                         └── S2
                                             └── *
 
-    --atlas_config                      Path to json config file
-    --atlas_anat                        Path to reference anatomy of the atlas
-    --atlas_directory                   Path of the folder containing all atlases
+    --atlas_directory                   Path of the folder containing atlas
+                                        ├── atlas
+                                        │   └── pop_average
+                                        ├── centroids
+                                        ├── config_fss_1.json
+                                        ├── config_fss_2.json
+                                        └── mni_masked.nii.gz
+
 
     OPTIONAL ARGUMENTS (current value)
+    --run_average_bundles               Run average bundles ($run_average_bundles)
 
-    --atlas_centroids                       Folder containing centroids (trk) for future tractometry (Must have the same basename as in the atlas_config + '_centroids')
-    --run_average_bundles                   Run average bundles ($run_average_bundles)
 
-    --multi_parameters                      Number of executions for the multi-parameters ($multi_parameters)
-    --minimal_vote_ratio                    Percentage of the vote to obtain in order to be considered valid ($minimal_vote_ratio)
-    --wb_clustering_thr                     List of distance (mm) for QBx whole brain clustreing ($wb_clustering_thr)
-    --seeds                                 List of random seeds values for the rng ($seeds)
-    --outlier_alpha                         Remove spurious streamlines based on shape ($outlier_alpha)
+    --minimal_vote_ratio                Percentage of the vote to obtain in order to be considered valid ($minimal_vote_ratio)
+    --seed                              List of random seeds values for the rng ($seed)
+    --outlier_alpha                     Remove spurious streamlines based on shape ($outlier_alpha)
 
-    --register_processes                    Number of processes for registration task ($register_processes).
-    --rbx_processes                         Number of processes for bundle recognition task ($rbx_processes).
-    --processes                             The number of parallel processes to launch ($cpu_count).
-                                            Only affects the local scheduler.
+    --register_processes                Number of processes for registration task ($register_processes).
+    --rbx_processes                     Number of processes for bundle recognition task ($rbx_processes).
+    --single_dataset_size_GB            Limit the number of parallel RBx to avoid RAM problem ($single_dataset_size_GB)
+                                        Average tracking files size per subject (round up for safety)
 
-    --output_dir                            Directory where to write the final results.
-                                            By default, will be in "./results_rbx"
+    --processes                         The number of parallel processes to launch ($cpu_count).
+                                        Only affects the local scheduler.
 
 
 AVAILABLE PROFILES (using -profile option (e.g. -profile large_dataset,cbrain))
+fully_reproducible                       When this profile is used, all the parameters will be set to have 100% reproducible results.
 
-large_dataset                               When this profile is used (>2M streamlines), rbx_flow will be asking for 16 GB instead of 8 GB.
+macos                                    When this profile is used, rbx_flow will modify a parameter (scratch) for MacOS users.
 
-fully_reproducible                          When this profile is used, all the parameters will be set to have 100% reproducible results.
-
-macos                                       When this profile is used, rbx_flow will modify a parameter (scratch) for MacOS users.
-
-cbrain                                      When this profile is used, Nextflow will copy all the output files in publishDir and not use symlinks.
+cbrain                                   When this profile is used, Nextflow will copy all the output files in publishDir and not use symlinks.
 
 NOTES
 
