@@ -10,7 +10,6 @@ To call with a container add: (requires a new release)
     -with-docker scilus/scilus:1.6.0_rbxflow-2.0.0
 
 The recommanded atlas is available at https://zenodo.org/record/7950602
-The main_long.nf is an attempt at a longitudinal approachs.
 
 If using this pipeline, please read and cite the following publications:
 [1] Garyfallidis, Eleftherios, et al. "Recognition of white matter bundles using
@@ -34,7 +33,14 @@ DESCRIPTION
                                         └── S2
                                             └── *
 
-    --atlas_directory                   Path of the folder containing all atlases
+    --atlas_directory                   Path of the folder containing atlas
+                                        ├── atlas
+                                        │   └── pop_average
+                                        ├── centroids
+                                        ├── config_fss_1.json
+                                        ├── config_fss_2.json
+                                        └── mni_masked.nii.gz
+
 
     OPTIONAL ARGUMENTS (current value)
     --run_average_bundles               Run average bundles ($run_average_bundles)
