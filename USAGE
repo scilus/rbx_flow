@@ -4,7 +4,6 @@ Pipeline for RecobundlesX
 USAGE
 
 nextflow run main.nf --input ... [OPTIONAL_ARGUMENTS]
-nextflow run main_group.nf --input ... [OPTIONAL_ARGUMENTS]
 To call with a container add: (requires a new release)
     -with-singularity scilus/scilus:1.6.0_rbxflow-2.0.0
     -with-docker scilus/scilus:1.6.0_rbxflow-2.0.0
