@@ -66,7 +66,10 @@ atlas_directory = Channel.fromPath("$params.atlas_directory/atlas")
 Channel.fromPath("$params.atlas_directory/mni_masked.nii.gz")
     .into{atlas_anat;atlas_anat_for_average}
 atlas_config = Channel.fromPath("$params.atlas_directory/config_fss_1.json")
-atlas_centroids = Channel.fromPath("$params.atlas_directory/centroids/*_centroid.trk")
+centroids_dir = Channel.fromPath("$params.atlas_directory/centroids/",
+                                   type: 'dir')
+centroids_dir
+    .into{atlas_centroids;atlas_centroids_for_average}
 
 workflow.onComplete {
     log.info "Pipeline completed at: $workflow.complete"
@@ -89,6 +92,7 @@ process Register_Anat {
     set sid, "${sid}__output0GenericAffine.mat" into transformation_for_average
     file "${sid}__outputWarped.nii.gz"
     file "${sid}__native_anat.nii.gz"
+
     script:
     """
     export ANTS_RANDOM_SEED=1234
@@ -97,20 +101,26 @@ process Register_Anat {
     """
 }
 
-
 anat_for_reference_centroids
     .join(transformation_for_centroids, by: 0)
+    .combine(atlas_centroids)
     .set{anat_and_transformation}
 process Transform_Centroids {
     input:
-    set sid, file(anat), file(transfo) from anat_and_transformation
-    each file(centroid) from atlas_centroids
+    set sid, file(anat), file(transfo), file(centroids_dir) from anat_and_transformation
+
     output:
-    file "${sid}__${centroid.baseName}.trk" optional true
+    file "${sid}__*.trk" optional true
+
     script:
     """
-    scil_apply_transform_to_tractogram.py ${centroid} ${anat} ${transfo} tmp.trk --inverse --keep_invalid
-    scil_remove_invalid_streamlines.py tmp.trk ${sid}__${centroid.baseName}.trk --cut_invalid --remove_single_point --remove_overlapping_points --no_empty
+    for centroid in ${centroids_dir}/*.trk;
+        do bname=\${centroid/_centroid/}
+        bname=\$(basename \$bname .trk)
+
+        scil_apply_transform_to_tractogram.py \${centroid} ${anat} ${transfo} tmp.trk --inverse --keep_invalid -f
+        scil_remove_invalid_streamlines.py tmp.trk ${sid}__\${bname}.trk --cut_invalid --remove_single_point --remove_overlapping_points --no_empty
+    done
     """
 }
 
@@ -127,69 +137,86 @@ process Recognize_Bundles {
 
     input:
     set sid, file(tractograms), file(refenrence), file(transfo), file(config), file(directory) from tractogram_and_transformation
+
     output:
     set sid, "*.trk" into bundles_for_cleaning
     file "results.json"
     file "logfile.txt"
+
     script:
     """
     mkdir tmp/
-    scil_recognize_multi_bundles.py $tractograms ${config} ${directory}/ ${transfo} --inverse --out_dir tmp/ \
+    scil_recognize_multi_bundles.py ${tractograms} ${config} ${directory}/ ${transfo} --inverse --out_dir tmp/ \
         --log_level DEBUG --minimal_vote_ratio $params.minimal_vote_ratio \
         --seed $params.seed --processes $params.rbx_processes
     mv tmp/* ./
     """
 }
 
-bundles_for_cleaning
-    .transpose()
-    .set{all_bundles_for_cleaning}
-process Clean_Bundles {
-    input:
-    set sid, file(bundle) from all_bundles_for_cleaning
-    output:
-    set sid, val(bname), "${sid}__*_cleaned.trk" optional true into bundle_for_density
-    script:
-    bname = bundle.name.take(bundle.name.lastIndexOf('.'))
-    """
-    scil_outlier_rejection.py ${bundle} "${sid}__${bname}_cleaned.trk" --alpha $params.outlier_alpha
-    """
-}
 
-bundle_for_density
+bundles_for_cleaning
     .combine(transformation_for_average, by:0)
     .combine(atlas_anat_for_average)
-    .set{all_bundles_transfo_for_average}
-process Compute_Density_Bundles {
+    .set{all_bundles_transfo_for_clean_average}
+process Clean_Bundles {
     input:
-    set sid, val(bname), file(bundle), file(transfo), file(atlas) from all_bundles_transfo_for_average
+    set sid, file(bundles), file(transfo), file(atlas) from all_bundles_transfo_for_clean_average
+
     output:
-    set bname, "*.nii.gz" into bundle_for_average
-    when:
-    params.run_average_bundles
+    set sid, "${sid}__*_cleaned.trk" 
+    file "${sid}__*.nii.gz" optional true into bundle_for_average
+
     script:
+    String bundles_list = bundles.join(", ").replace(',', '')
     """
-    scil_apply_transform_to_tractogram.py $bundle $atlas $transfo tmp.trk --remove_invalid
-    scil_compute_streamlines_density_map.py tmp.trk "${sid}__${bname}_density.nii.gz"
-    scil_image_math.py lower_threshold "${sid}__${bname}_density.nii.gz" 1 "${sid}__${bname}_binary.nii.gz"
+    for bundle in $bundles_list;
+        do if [[ \$bundle == *"__"* ]]; then
+            pos=\$((\$(echo \$bundle | grep -b -o __ | cut -d: -f1)+2))
+            bname=\${bundle:\$pos}
+            bname=\$(basename \$bname .trk)
+        else
+            bname=\$(basename \$bundle .trk)
+        fi
+
+        scil_outlier_rejection.py \${bundle} "${sid}__\${bname}_cleaned.trk" \
+            --alpha $params.outlier_alpha
+
+        scil_apply_transform_to_tractogram.py "${sid}__\${bname}_cleaned.trk" \
+            ${atlas} ${transfo} tmp.trk --remove_invalid -f
+        scil_compute_streamlines_density_map.py tmp.trk "${sid}__\${bname}_density.nii.gz"
+        scil_image_math.py lower_threshold "${sid}__\${bname}_density.nii.gz" 0.01 \
+            "${sid}__\${bname}_binary.nii.gz"
+    done
     """
 }
 
 
 bundle_for_average
-    .flatMap{ sid, bundles -> bundles.collect{[sid, it]} }
-    .groupTuple(by: 0)
+    .flatten()
+    .transpose()
+    .combine(atlas_centroids_for_average)
+    .groupTuple(by: 1)
     .set{all_bundle_for_average}
 process Average_Bundles {
     publishDir = params.Average_Bundles_Publish_Dir
     input:
-    set val(bname), file(bundles_bin) from all_bundle_for_average
+    set file(bundles), file(centroids_dir) from all_bundle_for_average
+
     output:
-    file "${bname}_density.nii.gz"
-    file "${bname}_binary.nii.gz"
+    file "*_average_density.nii.gz" optional true
+    file "*_average_binary.nii.gz" optional true
+
     script:
     """
-    scil_image_math.py addition *_density.nii.gz 0 ${bname}_density.nii.gz
-    scil_image_math.py addition *_binary.nii.gz 0 ${bname}_binary.nii.gz
+    for centroid in $centroids_dir/*.trk;
+        do bname=\${centroid/_centroid/}
+        bname=\$(basename \$bname .trk)
+        ls *__\${bname}*_density.nii.gz
+        if [[ -f *__\${bname}*_density.nii.gz ]];
+            echo 'found'
+            then scil_image_math.py addition *__\${bname}*_density.nii.gz 0 \${bname}_average_density.nii.gz
+            scil_image_math.py addition *__\${bname}*_binary.nii.gz 0 \${bname}_average_binary.nii.gz
+        fi
+    done
     """
 }
