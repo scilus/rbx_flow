@@ -208,15 +208,18 @@ process Average_Bundles {
 
     script:
     """
+    shopt -s nullglob
+    mkdir tmp/
     for centroid in $centroids_dir/*.trk;
         do bname=\${centroid/_centroid/}
         bname=\$(basename \$bname .trk)
-        ls *__\${bname}*_density.nii.gz
-        if [[ -f *__\${bname}*_density.nii.gz ]];
-            echo 'found'
-            then scil_image_math.py addition *__\${bname}*_density.nii.gz 0 \${bname}_average_density.nii.gz
-            scil_image_math.py addition *__\${bname}*_binary.nii.gz 0 \${bname}_average_binary.nii.gz
+
+        nfiles=\$(find ./ -maxdepth 1 -type f -name "*__\${bname}_density.nii.gz" | wc -l)
+        if [[ \$nfiles -gt 0 ]];
+            then scil_image_math.py addition *__\${bname}_density.nii.gz 0 tmp/\${bname}_average_density.nii.gz
+            scil_image_math.py addition *__\${bname}_binary.nii.gz 0 tmp/\${bname}_average_binary.nii.gz
         fi
     done
+    mv tmp/* ./
     """
 }
