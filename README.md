@@ -6,17 +6,17 @@
 
 Run the RecobundlesX pipeline.
 To access the example atlases:
-https://zenodo.org/record/4104300#.YmMEk_PMJaQ
+https://zenodo.org/record/7950602
 
 If you use this pipeline, please cite:
 
 ```
+Etienne St-Onge, Kurt Schilling, Francois Rheault, "BundleSeg: A versatile,
+reliable and reproducible approach to white matter bundle segmentation.",
+arXiv, 2308.10958 (2023)
+
 Rheault, Francois. Analyse et reconstruction de faisceaux de la matière blanche.
 page 137-170, (2020), https://savoirs.usherbrooke.ca/handle/11143/17255
-
-Garyfallidis, Eleftherios, et al. Recognition of white matter bundles using
-local and global streamline-based registration and clustering.
-NeuroImage 170 (2018) https://doi.org/10.1016/j.neuroimage.2017.07.015
 
 Kurtzer GM, Sochat V, Bauer MW Singularity: Scientific containers for
 mobility of compute. PLoS ONE 12(5): e0177459 (2017)
