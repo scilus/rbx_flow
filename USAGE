@@ -59,7 +59,7 @@ DESCRIPTION
                                         Only affects the local scheduler.
 
 
-AVAILABLE PROFILES (using -profile option (e.g. -profile large_dataset,cbrain))
+AVAILABLE PROFILES (using -profile option (e.g. -profile fully_reproducible, cbrain))
 fully_reproducible                       When this profile is used, all the parameters will be set to have 100% reproducible results.
 
 macos                                    When this profile is used, rbx_flow will modify a parameter (scratch) for MacOS users.
