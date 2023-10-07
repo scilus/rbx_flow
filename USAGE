@@ -11,13 +11,10 @@ To call with a container add: (requires a new release)
 The recommanded atlas is available at https://zenodo.org/record/7950602
 
 If using this pipeline, please read and cite the following publications:
-[1] Garyfallidis, Eleftherios, et al. "Recognition of white matter bundles using
-    local and global streamline-based registration and clustering."
-    NeuroImage (2018)
-[2] St-Onge, Etienne, Eleftherios Garyfallidis, and D. Louis Collins.
-    "Fast Streamline Search: An Exact Technique for Diffusion MRI Tractography."
-    Neuroinformatics (2022)
-[3] Rheault, François. "Analyse et reconstruction de faisceaux de la matière
+[1] Etienne St-Onge, Kurt Schilling, Francois Rheault, "BundleSeg: A versatile,
+    reliable and reproducible approach to white matter bundle segmentation.",
+    arXiv, 2308.10958 (2023)
+[2] Rheault, François. "Analyse et reconstruction de faisceaux de la matière
     blanche." Computer Science. Université de Sherbrooke (2020).
 	(Only chapter #4, in French)
 
