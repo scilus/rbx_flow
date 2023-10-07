@@ -3,6 +3,8 @@
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/scilus/rbx_flow)](https://github.com/scilus/rbx_flow/releases)
 
+[![Nextflow](https://img.shields.io/badge/nextflow-21.10.6-brightgreen.svg)](https://www.nextflow.io/)
+[![Docker container badge](https://img.shields.io/docker/v/scilus/scilus?label=docker&logo=docker&logoColor=white)](https://hub.docker.com/r/scilus/scilus)
 
 Run the RecobundlesX pipeline.
 To access the example atlases:
@@ -36,15 +38,14 @@ Requirements
 Singularity/Docker
 -----------
 If you are on Linux, we recommend using the Singularity to run rbx_flow pipeline.
-If you have Singularity == 3.*, launch your Nextflow command with:
-`-with-singularity scilus/scilus:1.2.0_rbxflow-1.1.0`
+If you have Apptainer (Singularity) launch your Nextflow command with:
+`-with-singularity scilus/scilus:1.6.0`
 
-If you have rebuild singularity Singularity == 2.* image is available [here](http://scil.dinf.usherbrooke.ca/en/containers_list/scilus-1.2.0_rbxflow-1.1.0.img)
-Launch your Nextflow command with: `-with-singularity ABSOLUTE_PATH/scilus-1.2.0_rbxflow-1.1.0.img`
+Image is available [here](http://scil.dinf.usherbrooke.ca/en/containers_list/scilus-1.6.0.sif)
 
 If you are on MacOS or Windows, we recommend using the Docker container to run rbx_flow pipeline.
 Launch your Nextflow command with:
-`-with-docker scilus/scilus:1.2.0_rbxflow-1.1.0`
+`-with-docker scilus/scilus:1.6.0`
 
 Usage
 -----

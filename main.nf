@@ -183,9 +183,9 @@ process Clean_Bundles {
 
         scil_apply_transform_to_tractogram.py "${sid}__\${bname}_cleaned.trk" \
             ${atlas} ${transfo} tmp.trk --remove_invalid -f
-        scil_compute_streamlines_density_map.py tmp.trk "${sid}__\${bname}_density.nii.gz"
-        scil_image_math.py lower_threshold "${sid}__\${bname}_density.nii.gz" 0.01 \
-            "${sid}__\${bname}_binary.nii.gz"
+        scil_compute_streamlines_density_map.py tmp.trk "${sid}__\${bname}_density_mni.nii.gz"
+        scil_image_math.py lower_threshold "${sid}__\${bname}_density_mni.nii.gz" 0.01 \
+            "${sid}__\${bname}_binary_mni.nii.gz"
     done
     """
 }
@@ -203,8 +203,8 @@ process Average_Bundles {
     set file(bundles), file(centroids_dir) from all_bundle_for_average
 
     output:
-    file "*_average_density.nii.gz" optional true
-    file "*_average_binary.nii.gz" optional true
+    file "*_average_density_mni.nii.gz" optional true
+    file "*_average_binary_mni.nii.gz" optional true
 
     script:
     """
@@ -214,10 +214,10 @@ process Average_Bundles {
         do bname=\${centroid/_centroid/}
         bname=\$(basename \$bname .trk)
 
-        nfiles=\$(find ./ -maxdepth 1 -type f -name "*__\${bname}_density.nii.gz" | wc -l)
+        nfiles=\$(find ./ -maxdepth 1 -type f -name "*__\${bname}_density_mni.nii.gz" | wc -l)
         if [[ \$nfiles -gt 0 ]];
-            then scil_image_math.py addition *__\${bname}_density.nii.gz 0 tmp/\${bname}_average_density.nii.gz
-            scil_image_math.py addition *__\${bname}_binary.nii.gz 0 tmp/\${bname}_average_binary.nii.gz
+            then scil_image_math.py addition *__\${bname}_density_mni.nii.gz 0 tmp/\${bname}_average_density_mni.nii.gz
+            scil_image_math.py addition *__\${bname}_binary_mni.nii.gz 0 tmp/\${bname}_average_binary_mni.nii.gz
         fi
     done
     mv tmp/* ./
