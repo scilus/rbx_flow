@@ -4,11 +4,15 @@ Pipeline for RecobundlesX
 USAGE
 
 nextflow run main.nf --input ... [OPTIONAL_ARGUMENTS]
-To call with a container add: (requires a new release)
-    -with-singularity scilus/scilus:1.6.0_rbxflow-2.0.0
-    -with-docker scilus/scilus:1.6.0_rbxflow-2.0.0
+To call with a container add:
+    -with-singularity scilus/scilus:1.6.0
+    -with-docker scilus/scilus:1.6.0
 
 The recommanded atlas is available at https://zenodo.org/record/7950602
+
+Warning
+=======
+Output images in mni space are named "*_mni.nii.gz", if not there are in native space.
 
 If using this pipeline, please read and cite the following publications:
 [1] Etienne St-Onge, Kurt Schilling, Francois Rheault, "BundleSeg: A versatile,
@@ -55,7 +59,7 @@ DESCRIPTION
                                         Only affects the local scheduler.
 
 
-AVAILABLE PROFILES (using -profile option (e.g. -profile large_dataset,cbrain))
+AVAILABLE PROFILES (using -profile option (e.g. -profile fully_reproducible, cbrain))
 fully_reproducible                       When this profile is used, all the parameters will be set to have 100% reproducible results.
 
 macos                                    When this profile is used, rbx_flow will modify a parameter (scratch) for MacOS users.
@@ -64,6 +68,13 @@ cbrain                                   When this profile is used, Nextflow wil
 
 NOTES
 
+The 'scilpy/scripts' folder should be in your PATH environment variable. Not necessary if the
+Singularity container is used.
+
+The intermediate working directory is, by default, set to './work'.
+To change it, use the '-w WORK_DIR' argument.
+
+The default config file is tractoflow/nextflow.config.
 Use '-C config_file.config' to specify a non-default configuration file.
 The '-C config_file.config' must be inserted after the nextflow call
 like 'nextflow -C config_file.config run ...'.
