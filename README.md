@@ -41,7 +41,7 @@ If you are on Linux, we recommend using the Singularity to run rbx_flow pipeline
 If you have Apptainer (Singularity) launch your Nextflow command with:
 `-with-singularity ABSOLUTE_PATH/scilus_1.6.0.sif`
 
-Image is available [here](http://scil.dinf.usherbrooke.ca/en/containers_list/scilus-1.6.0.sif)
+Image is available [here](https://scil.usherbrooke.ca/pages/containers/)
 
 If you are on MacOS or Windows, we recommend using the Docker container to run rbx_flow pipeline.
 Launch your Nextflow command with:
