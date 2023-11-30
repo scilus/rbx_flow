@@ -183,17 +183,17 @@ process Clean_Bundles {
             
         if [ -s "${sid}__\${bname}_cleaned.trk" ]  ; then 
 
-		scil_apply_transform_to_tractogram.py "${sid}__\${bname}_cleaned.trk" \
+        scil_apply_transform_to_tractogram.py "${sid}__\${bname}_cleaned.trk" \
 		    ${atlas} ${transfo} tmp.trk --remove_invalid -f
             
-		scil_compute_streamlines_density_map.py tmp.trk "${sid}__\${bname}_density_mni.nii.gz"
+        scil_compute_streamlines_density_map.py tmp.trk "${sid}__\${bname}_density_mni.nii.gz"
 
-		scil_image_math.py lower_threshold "${sid}__\${bname}_density_mni.nii.gz" 0.01 \
+        scil_image_math.py lower_threshold "${sid}__\${bname}_density_mni.nii.gz" 0.01 \
 		    "${sid}__\${bname}_binary_mni.nii.gz"
 		    
-	    else
+        else
             echo "Skipping cleaning for \${bundle} no outliers or all streamlines were outliers"
-	    fi
+        fi
     done
     """
 }
