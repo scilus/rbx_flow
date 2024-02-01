@@ -44,6 +44,7 @@ log.info "[Recobundles options]"
 log.info "Minimal Vote Percentage: $params.minimal_vote_ratio"
 log.info "Random Seed: $params.seed"
 log.info "Outlier Removal Alpha: $params.outlier_alpha"
+log.info "Run Average Bundles: $params.run_average_bundles"
 log.info ""
 log.info ""
 
@@ -182,17 +183,17 @@ process Clean_Bundles {
             --alpha $params.outlier_alpha
             
         if [ -s "${sid}__\${bname}_cleaned.trk" ]; then 
-
-            scil_apply_transform_to_tractogram.py "${sid}__\${bname}_cleaned.trk" \
-		        ${atlas} ${transfo} tmp.trk --remove_invalid -f
+            if ${params.run_average_bundles}; then
+                scil_apply_transform_to_tractogram.py "${sid}__\${bname}_cleaned.trk" \
+		            ${atlas} ${transfo} tmp.trk --remove_invalid -f
             
-            scil_compute_streamlines_density_map.py tmp.trk "${sid}__\${bname}_density_mni.nii.gz"
+                scil_compute_streamlines_density_map.py tmp.trk "${sid}__\${bname}_density_mni.nii.gz"
 
-            scil_image_math.py lower_threshold "${sid}__\${bname}_density_mni.nii.gz" 0.01 \
-		        "${sid}__\${bname}_binary_mni.nii.gz"
-		    
+                scil_image_math.py lower_threshold "${sid}__\${bname}_density_mni.nii.gz" 0.01 \
+                    "${sid}__\${bname}_binary_mni.nii.gz"
+            fi
         else
-            echo "Skipping cleaning for \${bundle} no outliers or all streamlines were outliers"
+            echo "After cleaning \${bundle} all streamlines were outliers."
         fi
     done
     """
