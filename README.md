@@ -13,9 +13,9 @@ https://zenodo.org/record/7950602
 If you use this pipeline, please cite:
 
 ```
-Etienne St-Onge, Kurt Schilling, Francois Rheault, "BundleSeg: A versatile,
-reliable and reproducible approach to white matter bundle segmentation.",
-arXiv, 2308.10958 (2023)
+St-Onge, Etienne, Kurt G. Schilling, and Francois Rheault. "BundleSeg: A versatile, 
+reliable and reproducible approach to white matter bundle segmentation." International 
+Workshop on Computational Diffusion MRI. Cham: Springer Nature Switzerland, (2023)
 
 Rheault, Francois. Analyse et reconstruction de faisceaux de la matière blanche.
 page 137-170, (2020), https://savoirs.usherbrooke.ca/handle/11143/17255
