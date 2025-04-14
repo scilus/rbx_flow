@@ -81,6 +81,7 @@ workflow.onComplete {
 anat_for_registration
     .combine(atlas_anat)
     .set{anats_for_registration}
+
 process Register_Anat {
     cpus params.register_processes
     memory '2 GB'
@@ -119,8 +120,8 @@ process Transform_Centroids {
         do bname=\${centroid/_centroid/}
         bname=\$(basename \$bname .trk)
 
-        scil_apply_transform_to_tractogram.py \${centroid} ${anat} ${transfo} tmp.trk --inverse --keep_invalid -f
-        scil_remove_invalid_streamlines.py tmp.trk ${sid}__\${bname}.trk --cut_invalid --remove_single_point --remove_overlapping_points --no_empty
+        scil_tractogram_apply_transform.py \${centroid} ${anat} ${transfo} tmp.trk --inverse --keep_invalid -f
+        scil_tractogram_remove_invalid.py tmp.trk ${sid}__\${bname}.trk --cut_invalid --remove_single_point --remove_overlapping_points --no_empty
     done
     """
 }
@@ -147,8 +148,8 @@ process Recognize_Bundles {
     script:
     """
     mkdir tmp/
-    scil_recognize_multi_bundles.py ${tractograms} ${config} ${directory}/ ${transfo} --inverse --out_dir tmp/ \
-        --log_level DEBUG --minimal_vote_ratio $params.minimal_vote_ratio \
+    scil_tractogram_segment_with_bundleseg.py ${tractograms} ${config} ${directory}/ ${transfo} --inverse --out_dir tmp/ \
+        -v DEBUG --minimal_vote_ratio $params.minimal_vote_ratio \
         --seed $params.seed --processes $params.rbx_processes
     mv tmp/* ./
     """
@@ -179,17 +180,17 @@ process Clean_Bundles {
             bname=\$(basename \$bundle .trk)
         fi
 
-        scil_outlier_rejection.py \${bundle} "${sid}__\${bname}_cleaned.trk" \
+        scil_bundle_reject_outliers.py \${bundle} "${sid}__\${bname}_cleaned.trk" \
             --alpha $params.outlier_alpha
             
         if [ -s "${sid}__\${bname}_cleaned.trk" ]; then 
             if ${params.run_average_bundles}; then
-                scil_apply_transform_to_tractogram.py "${sid}__\${bname}_cleaned.trk" \
+                scil_tractogram_apply_transform.py "${sid}__\${bname}_cleaned.trk" \
 		            ${atlas} ${transfo} tmp.trk --remove_invalid -f
             
-                scil_compute_streamlines_density_map.py tmp.trk "${sid}__\${bname}_density_mni.nii.gz"
+                scil_tractogram_compute_density_map.py tmp.trk "${sid}__\${bname}_density_mni.nii.gz"
 
-                scil_image_math.py lower_threshold "${sid}__\${bname}_density_mni.nii.gz" 0.01 \
+                scil_volume_math.py lower_threshold "${sid}__\${bname}_density_mni.nii.gz" 0.01 \
                     "${sid}__\${bname}_binary_mni.nii.gz"
             fi
         else
@@ -227,9 +228,19 @@ process Average_Bundles {
         bname=\$(basename \$bname .trk)
 
         nfiles=\$(find ./ -maxdepth 1 -type f -name "*__\${bname}_density_mni.nii.gz" | wc -l)
-        if [[ \$nfiles -gt 0 ]];
-            then scil_image_math.py addition *__\${bname}_density_mni.nii.gz 0 tmp/\${bname}_average_density_mni.nii.gz
-            scil_image_math.py addition *__\${bname}_binary_mni.nii.gz 0 tmp/\${bname}_average_binary_mni.nii.gz
+        if [[ \$nfiles -gt 1 ]]; then
+            scil_volume_math.py addition *__\${bname}_density_mni.nii.gz tmp/\${bname}_average_density_mni.nii.gz
+            scil_volume_math.py addition *__\${bname}_binary_mni.nii.gz tmp/\${bname}_average_binary_mni.nii.gz
+
+            scil_volume_math.py lower_threshold tmp/\${bname}_average_binary_mni.nii.gz 0.01 \
+                tmp/\${bname}_average_binary_mni.nii.gz --data_type uint8 -f
+
+        elif [[ \$nfiles -eq 1 ]]; then
+            cp *__\${bname}_density_mni.nii.gz tmp/\${bname}_average_density_mni.nii.gz
+            scil_volume_math.py convert *__\${bname}_binary_mni.nii.gz tmp/\${bname}_average_binary_mni.nii.gz \
+                --data_type uint8 -f
+        else
+            echo "No files found for \${bname}"
         fi
     done
     mv tmp/* ./
